@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-root">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#2c4696" />
+  <meta name="description" content="Pro Ledger & Debt Accounting - bilingual offline-first accounting and debt management" />
+  <link rel="manifest" href="manifest.json" />
+  <title>المحاسب الاحترافي الذكي | Pro Ledger &amp; Debt Accounting</title>
+  <style>
+    :root {
+      --blue: #2c4696;
+      --blue-dark: #1e326e;
+      --red: #dc2626;
+      --green: #16a34a;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --fg: #0f172a;
+      --mut: #64748b;
+      --line: #e2e8f0;
+    }
+    body.dark-theme {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --fg: #f1f5f9;
+      --mut: #94a3b8;
+      --line: #333333;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding-bottom: 96px;
+      font-family: 'Segoe UI', Tahoma, 'Cairo', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-tap-highlight-color: transparent;
+    }
+    html[dir="ltr"] body { font-family: 'Segoe UI', Inter, system-ui, sans-serif; }
+    h2 { margin: 6px 0 12px; font-size: 18px; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--fg);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+    button.primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+      padding: 11px 16px;
+      width: 100%;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    button.danger { color: var(--red); }
+    button.chev { border: none; background: none; padding: 0 4px; font-size: 16px; }
+    input, select {
+      font: inherit;
+      width: 100%;
+      margin-top: 4px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--fg);
+    }
+    label { display: block; margin-bottom: 10px; font-size: 14px; }
+    .num {
+      font-family: 'Consolas', 'Menlo', monospace;
+      font-variant-numeric: tabular-nums;
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+    .owed { color: var(--red); font-weight: 700; }
+    .due { color: var(--green); font-weight: 700; }
+    .muted { color: var(--mut); }
+    header.top {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      color: #fff;
+      background: linear-gradient(135deg, #2b4593 0%, #3957b3 100%);
+    }
+    body.dark-theme header.top { background: linear-gradient(135deg, #1b2848 0%, #243763 100%); }
+    header.top h1 { font-size: 16px; margin: 0; flex: 1; }
+    header.top button {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-color: transparent;
+    }
+    main { max-width: 1000px; margin: 0 auto; padding: 14px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .toolbar input, .toolbar select { width: auto; flex: 1; min-width: 140px; margin: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 8px; text-align: start; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th.sortable { cursor: pointer; user-select: none; }
+    tfoot td { font-weight: 700; }
+    tr.sub td { background: rgba(44, 70, 150, 0.07); font-size: 13px; }
+    .acts button { padding: 2px 8px; margin: 0 2px; }
+    .bottom {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13px;
+      background: linear-gradient(135deg, #2b4593 0%, #3b59b6 100%);
+    }
+    body.dark-theme .bottom { background: linear-gradient(135deg, #1b2848 0%, #243763 100%); }
+    .bottom .bt { text-align: center; }
+    .bottom .bt.big .num { font-size: 18px; font-weight: 700; }
+    .bottom .fab {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: #fff;
+      color: var(--blue);
+      font-size: 22px;
+      font-weight: 700;
+      padding: 0;
+    }
+    .drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 320px;
+      max-width: 86vw;
+      z-index: 50;
+      overflow-y: auto;
+      background: #212121;
+      color: #f8fafc;
+      transition: transform 0.2s ease;
+      box-shadow: 0 0 24px rgba(0, 0, 0, 0.5);
+    }
+    html[dir="rtl"] .drawer { right: 0; transform: translateX(100%); }
+    html[dir="ltr"] .drawer { left: 0; transform: translateX(-100%); }
+    .drawer.open { transform: none; }
+    .drawer .dhead {
+      padding: 16px;
+      background: #171717;
+      border-bottom: 1px solid #383838;
+      font-weight: 700;
+    }
+    .drawer button.item {
+      display: block;
+      width: 100%;
+      text-align: start;
+      background: none;
+      border: none;
+      border-bottom: 1px solid #383838;
+      border-radius: 0;
+      color: #f8fafc;
+      padding: 14px 16px;
+    }
+    .drawer button.item:hover { background: #2f2f2f; }
+    .drawer button.item.active { background: var(--blue); color: #fff; }
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      background: rgba(0, 0, 0, 0.65);
+    }
+    .backdrop.open { display: block; }
+    .lock {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--blue-dark);
+    }
+    .lock.open { display: flex; }
+    .lockbox {
+      width: min(340px, 90vw);
+      padding: 24px;
+      text-align: center;
+      border-radius: 16px;
+      background: #fff;
+      color: #0f172a;
+    }
+    .lockbox input {
+      font-size: 22px;
+      text-align: center;
+      letter-spacing: 6px;
+      margin: 12px 0;
+      color: #0f172a;
+      background: #fff;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+    .typeBtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 14px; }
+    .typeBtns button { padding: 14px; font-size: 16px; font-weight: 700; background: var(--card); }
+    .typeBtns .owedBtn { border: 2px solid var(--red); color: var(--red); }
+    .typeBtns .owedBtn.on { background: var(--red); color: #fff; }
+    .typeBtns .dueBtn { border: 2px solid var(--green); color: var(--green); }
+    .typeBtns .dueBtn.on { background: var(--green); color: #fff; }
+    .preview { background: rgba(44, 70, 150, 0.08); border-radius: 10px; padding: 10px; margin: 10px 0; font-size: 14px; }
+    .preview div { margin: 4px 0; }
+    .toast {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #fff;
+    }
+    .toast.show { display: block; }
+    .toast.err { background: #b91c1c; }
+    .tests li.ok { color: var(--green); }
+    .tests li.fail { color: var(--red); }
+    @media print {
+      .no-print, header.top, .bottom, .drawer, .backdrop, .lock, .toolbar, .acts { display: none !important; }
+      body { background: #fff !important; color: #000 !important; padding: 0 !important; }
+      .card { border: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top no-print">
+    <button data-act="openDrawer" id="menuBtn" aria-label="menu">☰</button>
+    <h1 id="appTitle">المحاسب الاحترافي الذكي</h1>
+    <button data-act="toggleLang" id="langBtn">EN</button>
+  </header>
+
+  <main id="main"></main>
+
+  <div class="bottom no-print" id="bottom"></div>
+
+  <div class="backdrop no-print" id="backdrop" data-act="closeDrawer"></div>
+  <aside class="drawer no-print" id="drawer" aria-label="Side Menu"></aside>
+
+  <div class="lock" id="lock">
+    <div class="lockbox">
+      <h2 id="lockTitle"></h2>
+      <p class="muted" id="lockLabel"></p>
+      <input type="password" inputmode="numeric" id="pinInput" autocomplete="off" />
+      <button class="primary" id="unlockBtn"></button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    'use strict';
+
+    const APP_VERSION = '2.0.0';
+    const REF_DATE = '2016-06-11';
+    const STORE_KEY = 'pro_accounting_ledger_v2';
+    const CATS = ['sales', 'cash', 'goods', 'advances', 'general'];
+    const DEFAULT_SETTINGS = {
+      orgName: '', accountantName: '', countryCode: '967', calcDate: REF_DATE,
+      theme: 'light', lang: 'ar', currency: '', pin: '', supportPhone: ''
+    };
+    const DRAWER = [
+      ['nav', 'totals', 'reportTotals', '📊'],
+      ['nav', 'details', 'reportDetails', '🧾'],
+      ['nav', 'monthly', 'reportMonthly', '📅'],
+      ['nav', 'categories', 'reportCategories', '🏷️'],
+      ['nav', 'movement', 'movement', '📒'],
+      ['nav', 'recurring', 'recurring', '🔁'],
+      ['nav', 'backup', 'backup', '💾'],
+      ['nav', 'restore', 'restore', '♻️'],
+      ['nav', 'drive', 'drive', '☁️'],
+      ['nav', 'settings', 'settings', '⚙️'],
+      ['nav', 'support', 'support', '💬'],
+      ['nav', 'about', 'about', 'ℹ️'],
+      ['shareApp', '', 'shareApp', '📤'],
+      ['logout', '', 'logout', '🔒']
+    ];
+    const SEED = [
+      { name: 'أحمد محمد', type: 'credit', amount: 16300, date: '2016-06-11' },
+      { name: 'بسام سعيد', type: 'debit', amount: 14500, date: '2016-06-07' },
+      { name: 'وليد محمد', type: 'debit', amount: 10500, date: '2016-05-20' },
+      { name: 'حسين صالح', type: 'debit', amount: 10000, date: '2016-06-07' },
+      { name: 'سعيد محسن', type: 'debit', amount: 8000, date: '2016-06-11' },
+      { name: 'عبدالله علي', type: 'debit', amount: 1000, date: '2016-06-11' },
+      { name: 'غانم أحمد', type: 'credit', amount: 200, date: '2016-06-11' }
+    ];
+    const NAME_EN = {
+      'أحمد محمد': 'Ahmed Mohammed', 'بسام سعيد': 'Bassam Saeed', 'وليد محمد': 'Waleed Mohammed',
+      'حسين صالح': 'Hussein Saleh', 'سعيد محسن': 'Saeed Mohsen', 'عبدالله علي': 'Abdullah Ali',
+      'غانم أحمد': 'Ghanem Ahmed'
+    };
+
+    const T = {
+      ar: {
+        appName: 'المحاسب الاحترافي الذكي', menu: 'القائمة', add: 'إضافة', owed: 'عليه', due: 'له',
+        balanceEq: 'الرصيد:=', net: 'الرصيد الصافي', expect: 'المتوقع بعد الحفظ', currentBal: 'الرصيد الحالي',
+        reportTotals: 'تقرير - إجمالي المبالغ', reportDetails: 'تقرير - تفاصيل كل المبالغ',
+        reportMonthly: 'تقرير - إجمالي المبالغ شهرياً', reportCategories: 'تقرير - إجمالي التصنيفات',
+        movement: 'تقرير - حركة الحسابات', recurring: 'التكرار التلقائي', backup: 'حفظ نسخة احتياطية',
+        restore: 'استرجاع قاعدة البيانات', drive: 'جوجل درايف', settings: 'إعدادات',
+        support: 'للتواصل والدعم', about: 'حول البرنامج', shareApp: 'مشاركة البرنامج', logout: 'خروج (قفل الجلسة)',
+        search: 'بحث بالاسم أو البيان', filterAll: 'الكل', filterOwed: 'عليه ▼', filterDue: 'له ▲',
+        filterOverdue: 'مرّ عليها أيام > 0', name: 'الاسم', amount: 'المبلغ', status: 'الحالة',
+        days: 'عدد الأيام', actions: 'إجراءات', date: 'التاريخ', category: 'التصنيف', phone: 'رقم واتساب',
+        note: 'التفاصيل', voucher: 'رقم السند', total: 'الإجمالي', count: 'عدد القيود', percent: 'النسبة',
+        month: 'الشهر', debit: 'مدين (عليه ▼)', credit: 'دائن (له ▲)', runBal: 'الرصيد التراكمي',
+        account: 'الحساب', allAccounts: 'كل الحسابات', print: 'طباعة', share: 'مشاركة', statement: 'كشف حساب',
+        addQuick: 'إضافة سريعة', save: 'حفظ', delete: 'حذف', confirmDelete: 'حذف هذا القيد؟',
+        deleted: 'تم الحذف', saved: 'تم الحفظ', copied: 'تم نسخ النص للحافظة', nameReq: 'الاسم مطلوب',
+        amountReq: 'أدخل مبلغاً صحيحاً أكبر من صفر', dateReq: 'تاريخ غير صالح', pinReq: 'رمز القفل يجب أن يكون من 4 إلى 8 أرقام',
+        wrongPin: 'رمز غير صحيح', enterPin: 'أدخل رمز القفل للدخول', setPinFirst: 'عيّن رمز قفل من الإعدادات أولاً',
+        restored: 'تم استرجاع قاعدة البيانات', invalidFile: 'ملف النسخة الاحتياطية غير صالح',
+        confirmRestore: 'سيتم استبدال البيانات الحالية بالنسخة المحددة. متابعة؟', addTitle: 'إضافة مبلغ (قيد جديد)',
+        lastMoves: 'آخر الحركات', accountant: 'المحاسب', waHello: 'مرحباً', stateOwed: 'عليه', stateDue: 'له',
+        settled: 'مسدد', openWhatsapp: 'فتح مراسلة الدعم عبر واتساب', supportMsg: 'مرحباً، أحتاج دعماً فنياً لبرنامج المحاسب الاحترافي الذكي.',
+        runTests: 'تشغيل فحص الدقة البرمجية (Self-Test)', rule1: 'المبالغ تُخزَّن كأعداد صحيحة بالسنتات، ولا تُجمع بالفاصلة العائمة.',
+        rule2: 'عليه ▼ = مدين = مطالبات لنا. له ▲ = دائن = التزامات علينا.', rule3: 'الرصيد الصافي = إجمالي عليه − إجمالي له.',
+        rule4: 'عدد الأيام = تاريخ الاحتساب − تاريخ آخر حركة.', theme: 'الوضع', light: 'نهاري', dark: 'ليلي',
+        orgName: 'اسم المنشأة', accountantName: 'اسم المحاسب', countryCode: 'مفتاح الدولة (واتساب)',
+        calcDate: 'تاريخ الاحتساب', pin: 'رمز القفل (4-8 أرقام، اتركه فارغاً لإلغائه)', currency: 'العملة',
+        language: 'اللغة', saveSettings: 'حفظ الإعدادات', jsonBtn: 'تنزيل JSON', csvBtn: 'تنزيل CSV',
+        backupNote: 'تنزيل قاعدة البيانات كاملة بصيغة JSON أو جدول القيود بصيغة CSV.',
+        restoreNote: 'اختر ملف نسخة احتياطية JSON لاستعادة جميع القيود فوراً.', chooseFile: 'اختيار ملف',
+        driveNote: 'تصدير نسخة JSON ثم مشاركتها إلى Google Drive عبر قائمة المشاركة في الجهاز (أو تنزيلها ورفعها يدوياً).',
+        driveBtn: 'تصدير ومشاركة إلى Google Drive', driveOpen: 'فتح Google Drive', posted: 'تم ترحيل قيود',
+        runNow: 'ترحيل الآن', freq: 'التكرار', monthlyF: 'شهري', weeklyF: 'أسبوعي', startDate: 'تاريخ البداية',
+        nextDate: 'القيد القادم', addRecurring: 'إضافة جدولة', noData: 'لا توجد بيانات',
+        passed: 'نجح', failed: 'فشل', testsTitle: 'نتائج الفحص', stateNone: '—', close: 'إغلاق',
+        openEntry: 'فتح', recurringNote: 'تكرار تلقائي', settlement: 'ملخص', waMsgCopy: 'نسخ',
+        balance: 'الرصيد', shareReport: 'مشاركة التقرير', printReport: 'طباعة', welcome: 'مرحباً'
+      },
+      en: {
+        appName: 'Pro Accounting Ledger', menu: 'Menu', add: 'Add', owed: 'Owed', due: 'Due',
+        balanceEq: 'Balance:=', net: 'Net balance', expect: 'Expected after saving', currentBal: 'Current balance',
+        reportTotals: 'Report - Totals', reportDetails: 'Report - All Entries',
+        reportMonthly: 'Report - Monthly Totals', reportCategories: 'Report - Categories',
+        movement: 'Report - Account Movement', recurring: 'Recurring Entries', backup: 'Backup',
+        restore: 'Restore Database', drive: 'Google Drive', settings: 'Settings',
+        support: 'Support', about: 'About', shareApp: 'Share App', logout: 'Logout (Lock Session)',
+        search: 'Search by name or note', filterAll: 'All', filterOwed: 'Owed ▼', filterDue: 'Due ▲',
+        filterOverdue: 'Days > 0', name: 'Name', amount: 'Amount', status: 'Status', days: 'Days',
+        actions: 'Actions', date: 'Date', category: 'Category', phone: 'WhatsApp number', note: 'Details',
+        voucher: 'Voucher', total: 'Total', count: 'Entries', percent: 'Share', month: 'Month',
+        debit: 'Debit (Owed ▼)', credit: 'Credit (Due ▲)', runBal: 'Running balance', account: 'Account',
+        allAccounts: 'All accounts', print: 'Print', share: 'Share', statement: 'Statement',
+        addQuick: 'Quick add', save: 'Save', delete: 'Delete', confirmDelete: 'Delete this entry?',
+        deleted: 'Deleted', saved: 'Saved', copied: 'Text copied to clipboard', nameReq: 'Name is required',
+        amountReq: 'Enter a valid amount greater than zero', dateReq: 'Invalid date',
+        pinReq: 'Lock PIN must be 4 to 8 digits', wrongPin: 'Wrong PIN', enterPin: 'Enter PIN to unlock',
+        setPinFirst: 'Set a lock PIN in Settings first', restored: 'Database restored',
+        invalidFile: 'Invalid backup file', confirmRestore: 'Current data will be replaced by the backup. Continue?',
+        addTitle: 'Add entry', lastMoves: 'Latest movements', accountant: 'Accountant', waHello: 'Hello',
+        stateOwed: 'owed', stateDue: 'due', settled: 'settled', openWhatsapp: 'Open support chat on WhatsApp',
+        supportMsg: 'Hello, I need technical support for Pro Accounting Ledger.',
+        runTests: 'Run accuracy self-test', rule1: 'Amounts are stored as integer cents; no floating-point addition.',
+        rule2: 'Owed ▼ = debit = receivable. Due ▲ = credit = payable.', rule3: 'Net balance = total owed − total due.',
+        rule4: 'Days = calculation date − latest movement date.', theme: 'Theme', light: 'Light', dark: 'Dark',
+        orgName: 'Organization name', accountantName: 'Accountant name', countryCode: 'WhatsApp country code',
+        calcDate: 'Calculation date', pin: 'Lock PIN (4-8 digits, leave empty to disable)', currency: 'Currency',
+        language: 'Language', saveSettings: 'Save settings', jsonBtn: 'Download JSON', csvBtn: 'Download CSV',
+        backupNote: 'Download the full database as JSON, or the entries table as CSV.',
+        restoreNote: 'Choose a JSON backup file to restore all entries immediately.', chooseFile: 'Choose file',
+        driveNote: 'Export a JSON backup and share it to Google Drive via the device share sheet (or download and upload it manually).',
+        driveBtn: 'Export & share to Google Drive', driveOpen: 'Open Google Drive', posted: 'Entries posted',
+        runNow: 'Post due entries now', freq: 'Frequency', monthlyF: 'Monthly', weeklyF: 'Weekly', startDate: 'Start date',
+        nextDate: 'Next date', addRecurring: 'Add schedule', noData: 'No data',
+        passed: 'passed', failed: 'failed', testsTitle: 'Test results', stateNone: '—', close: 'Close',
+        openEntry: 'Open', recurringNote: 'Recurring', settlement: 'Summary', waMsgCopy: 'Copy',
+        balance: 'Balance', shareReport: 'Share report', printReport: 'Print', welcome: 'Welcome'
+      }
+    };
+
+    // MoneyEngine: all arithmetic is done on integer cents.
+    const ME = {
+      toCents(v) {
+        const n = typeof v === 'number' ? v : Number(String(v).trim());
+        if (!Number.isFinite(n)) throw new Error('invalid amount');
+        return Math.round(n * 100);
+      },
+      add(a, b) { return a + b; },
+      sum(list) { return list.reduce((s, x) => s + x, 0); },
+      format(cents) {
+        const neg = cents < 0;
+        const abs = Math.abs(cents);
+        const whole = Math.floor(abs / 100);
+        const frac = abs % 100;
+        let s = whole.toLocaleString('en-US');
+        if (frac) s += '.' + String(frac).padStart(2, '0');
+        return (neg ? '-' : '') + s;
+      }
+    };
+
+    function toAscii(s) {
+      return s
+        .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660))
+        .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0))
+        .replace(/٫/g, '.')
+        .replace(/٬/g, '');
+    }
+
+    // Returns integer cents, null for empty input, throws for invalid expressions.
+    function evalExpr(raw) {
+      const s = toAscii(String(raw)).replace(/,/g, '').replace(/[×xX]/g, '*').replace(/÷/g, '/').replace(/\s+/g, '');
+      if (!s) return null;
+      if (!/^[0-9+\-*/().]+$/.test(s)) throw new Error('invalid expression');
+      const v = Function('"use strict"; return (' + s + ');')();
+      if (typeof v !== 'number' || !Number.isFinite(v)) throw new Error('invalid expression');
+      return ME.toCents(v);
+    }
+
+    const $ = sel => document.querySelector(sel);
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function t(k) { return (T[S.settings.lang] || T.ar)[k] ?? T.ar[k] ?? k; }
+    function money(c) {
+      const s = ME.format(c);
+      return S.settings.currency ? s + ' ' + S.settings.currency : s;
+    }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+    function isValidDate(s) {
+      return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s + 'T00:00:00Z'));
+    }
+    function daysBetween(a, b) {
+      return Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86400000);
+    }
+    function addPeriod(date, freq) {
+      const d = new Date(date + 'T00:00:00Z');
+      if (freq === 'weekly') d.setUTCDate(d.getUTCDate() + 7);
+      else d.setUTCMonth(d.getUTCMonth() + 1);
+      return d.toISOString().slice(0, 10);
+    }
+    function todayISO() { return new Date().toISOString().slice(0, 10); }
+    function voucher(e) { return 'V-' + String(e.seq).padStart(5, '0'); }
+    function dispName(n) { return S.settings.lang === 'en' && NAME_EN[n] ? NAME_EN[n] : n; }
+    function catLabel(k) {
+      const map = { ar: { sales: 'مبيعات آجلة', cash: 'تحصيل نقدي', goods: 'توريد بضاعة', advances: 'سلف وذمم', general: 'عام' },
+        en: { sales: 'Credit Sales', cash: 'Cash Collection', goods: 'Goods Supply', advances: 'Advances & Receivables', general: 'General' } };
+      return (map[S.settings.lang] || map.ar)[k] || k;
+    }
+    function sortedEntries(list = S.entries) {
+      return [...list].sort((a, b) => (a.date === b.date ? a.seq - b.seq : (a.date < b.date ? -1 : 1)));
+    }
+    function signed(e) { return e.type === 'debit' ? e.cents : -e.cents; }
+
+    // Per-account summaries (net in cents: positive = owed to us, negative = we owe).
+    function summaries(list = S.entries, refDate = S.settings.calcDate) {
+      const map = new Map();
+      for (const e of list) {
+        const k = e.name.trim();
+        let p = map.get(k);
+        if (!p) {
+          p = { name: k, net: 0, last: e.date, phone: '', count: 0, text: '' };
+          map.set(k, p);
+        }
+        p.net = ME.add(p.net, signed(e));
+        p.count++;
+        if (e.date > p.last) p.last = e.date;
+        if (e.phone) p.phone = e.phone;
+        p.text += ' ' + e.note;
+      }
+      for (const p of map.values()) {
+        p.days = daysBetween(p.last, refDate);
+        p.text = (p.name + ' ' + p.text).toLowerCase();
+      }
+      return [...map.values()];
+    }
+    function totalsOf(rows) {
+      let owed = 0, due = 0;
+      for (const p of rows) {
+        if (p.net > 0) owed = ME.add(owed, p.net);
+        else if (p.net < 0) due = ME.add(due, -p.net);
+      }
+      return { owed, due, net: owed - due };
+    }
+    function netOf(name) {
+      return ME.sum(S.entries.filter(e => e.name.trim() === name).map(signed));
+    }
+    function statusLabel(net) {
+      if (net > 0) return `<span class="owed">▼ ${t('owed')}</span>`;
+      if (net < 0) return `<span class="due">▲ ${t('due')}</span>`;
+      return `<span class="muted">${t('stateNone')}</span>`;
+    }
+    function balCell(net) {
+      return `<span class="num">${money(Math.abs(net))}</span> ${statusLabel(net)}`;
+    }
+    function tableHTML(headers, rows, foot) {
+      const head = headers.map(h => `<th>${h}</th>`).join('');
+      const body = rows.length
+        ? rows.map(r => `<tr class="row-hover">${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')
+        : `<tr><td colspan="${headers.length}" class="muted">${t('noData')}</td></tr>`;
+      const tf = foot ? `<tfoot><tr>${foot.map(c => `<td>${c}</td>`).join('')}</tr></tfoot>` : '';
+      return `<div class="card"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody>${tf}</table></div>`;
+    }
+
+    function persist() {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) { toast('Storage error', 'err'); }
+    }
+    function seedEntries() {
+      return SEED.map((s, i) => ({
+        id: 'seed-' + (i + 1), seq: i + 1, name: s.name, type: s.type,
+        cents: ME.toCents(s.amount), category: 'general', phone: '', note: '', date: s.date
+      }));
+    }
+    function validEntry(e) {
+      return !!e && typeof e.name === 'string' && e.name.trim() !== '' && (e.type === 'debit' || e.type === 'credit')
+        && Number.isInteger(e.cents) && e.cents >= 0 && isValidDate(e.date);
+    }
+    function normalize(d) {
+      const entries = (d.entries || []).filter(validEntry).map((e, i) => ({
+        id: String(e.id || uid()), seq: Number(e.seq) || i + 1, name: e.name.trim(), type: e.type, cents: e.cents,
+        category: CATS.includes(e.category) ? e.category : 'general', phone: String(e.phone || ''),
+        note: String(e.note || ''), date: e.date
+      }));
+      const maxSeq = entries.reduce((m, e) => Math.max(m, e.seq), 0);
+      const settings = { ...DEFAULT_SETTINGS, ...(d.settings || {}) };
+      if (!isValidDate(settings.calcDate)) settings.calcDate = REF_DATE;
+      return {
+        entries, recurring: Array.isArray(d.recurring) ? d.recurring : [],
+        seq: Math.max(Number(d.seq) || 0, maxSeq), settings
+      };
+    }
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) return normalize(JSON.parse(raw));
+      } catch (e) { /* fall through to reference data */ }
+      return { entries: seedEntries(), recurring: [], seq: SEED.length, settings: { ...DEFAULT_SETTINGS } };
+    }
+
+    let S = load();
+    const ui = {
+      view: 'totals', search: '', filter: 'all', sortKey: 'name', sortDir: 1, expanded: {},
+      account: '__all__', locked: !!S.settings.pin, tests: null, supportPhone: S.settings.supportPhone || '',
+      form: { name: '', amount: '', type: 'debit', category: 'general', phone: '', note: '', date: S.settings.calcDate },
+      rec: { name: '', amount: '', type: 'debit', category: 'general', freq: 'monthly', date: S.settings.calcDate }
+    };
+
+    // ---------- Views ----------
+    function bindId(k) { return 'b_' + k.replace(/\./g, '_'); }
+    function viewTotals() {
+      const q = ui.search.trim().toLowerCase();
+      const rows = summaries().filter(p => {
+        if (q && !p.text.includes(q)) return false;
+        if (ui.filter === 'owed') return p.net > 0;
+        if (ui.filter === 'due') return p.net < 0;
+        if (ui.filter === 'overdue') return p.days > 0;
+        return true;
+      });
+      const keyFn = { name: p => dispName(p.name), amount: p => Math.abs(p.net), status: p => p.net, days: p => p.days }[ui.sortKey];
+      rows.sort((a, b) => { const x = keyFn(a), y = keyFn(b); return (x < y ? -1 : x > y ? 1 : 0) * ui.sortDir; });
+      const th = (k, label) => `<th class="sortable" data-act="sort" data-arg="${k}">${label}${ui.sortKey === k ? (ui.sortDir > 0 ? ' ↑' : ' ↓') : ''}</th>`;
+      let body = '';
+      for (const p of rows) {
+        const open = !!ui.expanded[p.name];
+        body += `<tr class="row-hover">
+          <td><button class="chev" data-act="expand" data-arg="${esc(p.name)}">${open ? '⌃' : '⌄'}</button> ${esc(dispName(p.name))}</td>
+          <td class="num">${money(Math.abs(p.net))}</td>
+          <td>${statusLabel(p.net)}</td>
+          <td class="num">${p.days}</td>
+          <td class="acts">
+            <button data-act="quickAdd" data-arg="${esc(p.name)}" title="${t('addQuick')}">+</button>
+            <button data-act="wa" data-arg="${esc(p.name)}" title="${t('whatsapp')}">💬</button>
+            <button data-act="statement" data-arg="${esc(p.name)}" title="${t('statement')}">📄</button>
+          </td></tr>`;
+        if (open) {
+          let run = 0;
+          for (const e of sortedEntries(S.entries.filter(x => x.name.trim() === p.name))) {
+            run = ME.add(run, signed(e));
+            body += `<tr class="sub"><td colspan="2">${voucher(e)} · ${e.date} · ${esc(catLabel(e.category))} · ${esc(e.note)}
+              <span class="num">${e.type === 'debit' ? '▼' : '▲'} ${money(e.cents)}</span></td>
+              <td>${t('runBal')}: ${balCell(run)}</td><td colspan="2"><button class="danger" data-act="del" data-arg="${e.id}">${t('delete')}</button></td></tr>`;
+          }
+        }
+      }
+      const tot = totalsOf(rows);
+      const opts = [['all', 'filterAll'], ['owed', 'filterOwed'], ['due', 'filterDue'], ['overdue', 'filterOverdue']]
+        .map(([v, k]) => `<option value="${v}" ${ui.filter === v ? 'selected' : ''}>${t(k)}</option>`).join('');
+      return `<h2>${t('reportTotals')}</h2>
+        <div class="toolbar no-print">
+          <input id="b_search" data-bind="search" placeholder="${t('search')}" value="${esc(ui.search)}" />
+          <select data-bind="filter">${opts}</select>
+          <button data-act="shareView">${t('share')}</button>
+          <button data-act="print">${t('print')}</button>
+        </div>
+        <div class="card"><table>
+          <thead><tr>${th('name', t('name'))}${th('amount', t('amount'))}${th('status', t('status'))}${th('days', t('days'))}<th>${t('actions')}</th></tr></thead>
+          <tbody>${body || `<tr><td colspan="5" class="muted">${t('noData')}</td></tr>`}</tbody>
+          <tfoot><tr><td>${t('total')}</td><td class="num">${money(tot.owed + tot.due)}</td>
+            <td>${t('net')}: <span class="num">${money(tot.net)}</span></td><td></td><td></td></tr></tfoot>
+        </table></div>`;
+    }
+    function viewDetails() {
+      const rows = sortedEntries(S.entries).reverse().map(e => [
+        voucher(e), e.date, esc(dispName(e.name)), esc(catLabel(e.category)), esc(e.note),
+        e.type === 'debit' ? `<span class="num">${money(e.cents)}</span>` : '',
+        e.type === 'credit' ? `<span class="num">${money(e.cents)}</span>` : '',
+        `<button class="danger" data-act="del" data-arg="${e.id}">${t('delete')}</button>`
+      ]);
+      return `<h2>${t('reportDetails')}</h2>
+        <div class="toolbar no-print"><button data-act="shareView">${t('share')}</button><button data-act="print">${t('print')}</button></div>
+        ${tableHTML([t('voucher'), t('date'), t('name'), t('category'), t('note'), t('debit'), t('credit'), t('actions')], rows)}`;
+    }
+    function viewMonthly() {
+      const map = new Map();
+      for (const e of S.entries) {
+        const k = e.date.slice(0, 7);
+        const m = map.get(k) || { k, owed: 0, due: 0, count: 0 };
+        if (e.type === 'debit') m.owed = ME.add(m.owed, e.cents); else m.due = ME.add(m.due, e.cents);
+        m.count++;
+        map.set(k, m);
+      }
+      const list = [...map.values()].sort((a, b) => (a.k < b.k ? 1 : -1));
+      const rows = list.map(m => [m.k, `<span class="num">${money(m.owed)}</span>`, `<span class="num">${money(m.due)}</span>`,
+        `<span class="num">${money(m.owed - m.due)}</span>`, m.count]);
+      const all = list.reduce((a, m) => ({ owed: a.owed + m.owed, due: a.due + m.due, count: a.count + m.count }), { owed: 0, due: 0, count: 0 });
+      return `<h2>${t('reportMonthly')}</h2>
+        <div class="toolbar no-print"><button data-act="shareView">${t('share')}</button><button data-act="print">${t('print')}</button></div>
+        ${tableHTML([t('month'), t('owed'), t('due'), t('net'), t('count')], rows,
+          [t('total'), `<span class="num">${money(all.owed)}</span>`, `<span class="num">${money(all.due)}</span>`,
+            `<span class="num">${money(all.owed - all.due)}</span>`, all.count])}`;
+    }
+    function viewCategories() {
+      const map = new Map();
+      for (const e of S.entries) {
+        const m = map.get(e.category) || { k: e.category, gross: 0, count: 0 };
+        m.gross = ME.add(m.gross, e.cents);
+        m.count++;
+        map.set(e.category, m);
+      }
+      const grossAll = ME.sum([...map.values()].map(m => m.gross));
+      const rows = [...map.values()].sort((a, b) => b.gross - a.gross).map(m => [
+        catLabel(m.k), m.count, `<span class="num">${money(m.gross)}</span>`,
+        `${grossAll ? ((m.gross / grossAll) * 100).toFixed(1) : '0.0'}%`
+      ]);
+      return `<h2>${t('reportCategories')}</h2>
+        <div class="toolbar no-print"><button data-act="shareView">${t('share')}</button><button data-act="print">${t('print')}</button></div>
+        ${tableHTML([t('category'), t('count'), t('amount'), t('percent')], rows,
+          [t('total'), S.entries.length, `<span class="num">${money(grossAll)}</span>`, '100%'])}`;
+    }
+    function viewMovement() {
+      const names = [...new Set(S.entries.map(e => e.name.trim()))].sort();
+      const opts = [`<option value="__all__" ${ui.account === '__all__' ? 'selected' : ''}>${t('allAccounts')}</option>`]
+        .concat(names.map(n => `<option value="${esc(n)}" ${ui.account === n ? 'selected' : ''}>${esc(dispName(n))}</option>`)).join('');
+      const list = ui.account === '__all__' ? S.entries : S.entries.filter(e => e.name.trim() === ui.account);
+      let run = 0;
+      const rows = sortedEntries(list).map(e => {
+        run = ME.add(run, signed(e));
+        return [voucher(e), e.date, esc(dispName(e.name)), esc(catLabel(e.category)), esc(e.note),
+          e.type === 'debit' ? `<span class="num">${money(e.cents)}</span>` : '',
+          e.type === 'credit' ? `<span class="num">${money(e.cents)}</span>` : '', balCell(run)];
+      });
+      return `<h2>${t('movement')}</h2>
+        <div class="toolbar no-print">
+          <select data-bind="account">${opts}</select>
+          <button data-act="shareView">${t('share')}</button><button data-act="print">${t('print')}</button>
+        </div>
+        ${tableHTML([t('voucher'), t('date'), t('name'), t('category'), t('note'), t('debit'), t('credit'), t('runBal')], rows)}`;
+    }
+    function viewAdd() {
+      const f = ui.form;
+      let cents = null, bad = false;
+      try { cents = evalExpr(f.amount); } catch (e) { bad = true; }
+      const name = f.name.trim();
+      const cur = name ? netOf(name) : 0;
+      const exp = cur + (f.type === 'debit' ? (cents || 0) : -(cents || 0));
+      const names = [...new Set(S.entries.map(e => e.name.trim()))].sort();
+      const quick = names.slice(0, 8).map(n => `<button data-act="pickName" data-arg="${esc(n)}">${esc(dispName(n))}</button>`).join('');
+      const amountShow = bad || cents === null ? '—' : money(cents);
+      const cats = CATS.map(c => `<option value="${c}" ${f.category === c ? 'selected' : ''}>${catLabel(c)}</option>`).join('');
+      return `<h2>${t('addTitle')}</h2>
+        <div class="card">
+          <label>${t('name')}
+            <input id="${bindId('form.name')}" list="nameList" data-bind="form.name" value="${esc(f.name)}" autocomplete="off" />
+          </label>
+          <datalist id="nameList">${names.map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist>
+          <div class="chips">${quick}</div>
+          <label>${t('amount')}
+            <input id="${bindId('form.amount')}" inputmode="decimal" data-bind="form.amount" value="${esc(f.amount)}" placeholder="14500+500*2" />
+          </label>
+          <div class="muted">= <b class="num">${amountShow}</b></div>
+          <div class="chips">
+            ${[500, 1000, 5000, 10000].map(n => `<button data-act="quick" data-arg="${n}">+${n.toLocaleString('en-US')}</button>`).join('')}
+          </div>
+          <div class="typeBtns">
+            <button class="owedBtn ${f.type === 'debit' ? 'on' : ''}" data-act="setType" data-arg="debit">▼ ${t('owed')}</button>
+            <button class="dueBtn ${f.type === 'credit' ? 'on' : ''}" data-act="setType" data-arg="credit">▲ ${t('due')}</button>
+          </div>
+          <label>${t('category')}
+            <select id="${bindId('form.category')}" data-bind="form.category">${cats}</select>
+          </label>
+          <label>${t('phone')}
+            <input id="${bindId('form.phone')}" inputmode="tel" data-bind="form.phone" value="${esc(f.phone)}" />
+          </label>
+          <label>${t('note')}
+            <input id="${bindId('form.note')}" data-bind="form.note" value="${esc(f.note)}" />
+          </label>
+          <label>${t('date')}
+            <input id="${bindId('form.date')}" type="date" data-bind="form.date" value="${esc(f.date)}" />
+          </label>
+          <div class="preview">
+            <div>${t('currentBal')}: ${balCell(cur)}</div>
+            <div>${t('expect')}: ${balCell(exp)}</div>
+          </div>
+          <button class="primary" data-act="saveEntry">${t('save')}</button>
+        </div>`;
+    }
+    function viewRecurring() {
+      const r = ui.rec;
+      const cats = CATS.map(c => `<option value="${c}" ${r.category === c ? 'selected' : ''}>${catLabel(c)}</option>`).join('');
+      const rows = S.recurring.map(x => [esc(dispName(x.name)), x.type === 'debit' ? t('owed') : t('due'),
+        `<span class="num">${money(x.cents)}</span>`, x.freq === 'weekly' ? t('weeklyF') : t('monthlyF'), x.nextDate,
+        `<button class="danger" data-act="delRec" data-arg="${x.id}">${t('delete')}</button>`]);
+      return `<h2>${t('recurring')}</h2>
+        <div class="card">
+          <label>${t('name')}<input id="${bindId('rec.name')}" data-bind="rec.name" value="${esc(r.name)}" /></label>
+          <label>${t('amount')}<input id="${bindId('rec.amount')}" inputmode="decimal" data-bind="rec.amount" value="${esc(r.amount)}" /></label>
+          <div class="typeBtns">
+            <button class="owedBtn ${r.type === 'debit' ? 'on' : ''}" data-act="setRecType" data-arg="debit">▼ ${t('owed')}</button>
+            <button class="dueBtn ${r.type === 'credit' ? 'on' : ''}" data-act="setRecType" data-arg="credit">▲ ${t('due')}</button>
+          </div>
+          <label>${t('category')}<select data-bind="rec.category">${cats}</select></label>
+          <label>${t('freq')}<select data-bind="rec.freq">
+            <option value="monthly" ${r.freq === 'monthly' ? 'selected' : ''}>${t('monthlyF')}</option>
+            <option value="weekly" ${r.freq === 'weekly' ? 'selected' : ''}>${t('weeklyF')}</option></select></label>
+          <label>${t('startDate')}<input type="date" data-bind="rec.date" value="${esc(r.date)}" /></label>
+          <button class="primary" data-act="addRec">${t('addRecurring')}</button>
+          <button class="primary" data-act="runRec" style="background:#16a34a;border-color:#16a34a">${t('runNow')}</button>
+        </div>
+        ${tableHTML([t('name'), t('type') || t('status'), t('amount'), t('freq'), t('nextDate'), t('actions')], rows)}`;
+    }
+    function viewBackup() {
+      return `<h2>${t('backup')}</h2>
+        <div class="card"><p>${t('backupNote')}</p>
+          <button class="primary" data-act="backupJSON">${t('jsonBtn')}</button>
+          <button class="primary" data-act="backupCSV">${t('csvBtn')}</button></div>`;
+    }
+    function viewRestore() {
+      return `<h2>${t('restore')}</h2>
+        <div class="card"><p>${t('restoreNote')}</p>
+          <input type="file" id="restoreFile" accept=".json,application/json" /></div>`;
+    }
+    function viewDrive() {
+      return `<h2>${t('drive')}</h2>
+        <div class="card"><p>${t('driveNote')}</p>
+          <button class="primary" data-act="driveExport">${t('driveBtn')}</button>
+          <button class="primary" data-act="driveOpen" style="background:#64748b;border-color:#64748b">${t('driveOpen')}</button></div>`;
+    }
+    function viewSettings() {
+      const s = S.settings;
+      const cur = ['', 'YER', 'SAR', 'USD'].map(c => `<option value="${c}" ${s.currency === c ? 'selected' : ''}>${c || '—'}</option>`).join('');
+      return `<h2>${t('settings')}</h2>
+        <div class="card">
+          <label>${t('orgName')}<input data-set="orgName" value="${esc(s.orgName)}" /></label>
+          <label>${t('accountantName')}<input data-set="accountantName" value="${esc(s.accountantName)}" /></label>
+          <label>${t('countryCode')}<input data-set="countryCode" inputmode="numeric" value="${esc(s.countryCode)}" /></label>
+          <label>${t('calcDate')}<input type="date" data-set="calcDate" value="${esc(s.calcDate)}" /></label>
+          <label>${t('currency')}<select data-set="currency">${cur}</select></label>
+          <label>${t('theme')}<select data-set="theme">
+            <option value="light" ${s.theme === 'light' ? 'selected' : ''}>${t('light')}</option>
+            <option value="dark" ${s.theme === 'dark' ? 'selected' : ''}>${t('dark')}</option></select></label>
+          <label>${t('language')}<select data-set="lang">
+            <option value="ar" ${s.lang === 'ar' ? 'selected' : ''}>العربية</option>
+            <option value="en" ${s.lang === 'en' ? 'selected' : ''}>English</option></select></label>
+          <label>${t('pin')}<input data-set="pin" type="password" inputmode="numeric" value="${esc(s.pin)}" /></label>
+          <button class="primary" data-act="saveSettings">${t('saveSettings')}</button>
+        </div>`;
+    }
+    function viewSupport() {
+      return `<h2>${t('support')}</h2>
+        <div class="card">
+          <label>${t('phone')}<input id="${bindId('supportPhone')}" inputmode="tel" data-bind="supportPhone" value="${esc(ui.supportPhone)}" /></label>
+          <button class="primary" data-act="support">${t('openWhatsapp')}</button>
+        </div>`;
+    }
+    function viewAbout() {
+      const tests = ui.tests ? `<h3>${t('testsTitle')}</h3><ul class="tests">${ui.tests.results.map(r =>
+        `<li class="${r.ok ? 'ok' : 'fail'}">${r.ok ? '✓' : '✗'} ${esc(r.name)}</li>`).join('')}</ul>
+        <p><b>${ui.tests.passed}</b> ${t('passed')} / <b>${ui.tests.failed}</b> ${t('failed')}</p>` : '';
+      return `<h2>${t('about')}</h2>
+        <div class="card">
+          <p><b>${t('appName')}</b> v${APP_VERSION}</p>
+          <ul><li>${t('rule1')}</li><li>${t('rule2')}</li><li>${t('rule3')}</li><li>${t('rule4')}</li></ul>
+          <button class="primary" data-act="selfTest">${t('runTests')}</button>
+          ${tests}
+        </div>`;
+    }
+
+    const VIEWS = {
+      totals: viewTotals, details: viewDetails, monthly: viewMonthly, categories: viewCategories,
+      movement: viewMovement, add: viewAdd, recurring: viewRecurring, backup: viewBackup,
+      restore: viewRestore, drive: viewDrive, settings: viewSettings, support: viewSupport, about: viewAbout
+    };
+
+    function netLabelFor(view) { return view; }
+
+    // ---------- Rendering ----------
+    function applyPrefs() {
+      const root = document.documentElement;
+      root.lang = S.settings.lang;
+      root.dir = S.settings.lang === 'en' ? 'ltr' : 'rtl';
+      document.body.classList.toggle('dark-theme', S.settings.theme === 'dark');
+      $('#langBtn').textContent = S.settings.lang === 'en' ? 'ع' : 'EN';
+      $('#appTitle').textContent = t('appName');
+      $('#menuBtn').setAttribute('aria-label', t('menu'));
+      $('#lockTitle').textContent = t('appName');
+      $('#lockLabel').textContent = t('enterPin');
+      $('#unlockBtn').textContent = t('save') === 'حفظ' ? 'دخول' : 'Unlock';
+      $('#lock').classList.toggle('open', ui.locked);
+    }
+    function drawerHTML() {
+      const items = DRAWER.map(([act, arg, key, icon]) => {
+        const active = act === 'nav' && ui.view === arg ? ' active' : '';
+        return `<button class="item${active}" data-act="${act}" data-arg="${arg}">${icon} ${t(key)}</button>`;
+      }).join('');
+      return `<div class="dhead">${t('appName')}</div>${items}`;
+    }
+    function renderBottom() {
+      const tot = totalsOf(summaries());
+      $('#bottom').innerHTML = `
+        <button class="fab" data-act="nav" data-arg="add" aria-label="${t('add')}">+</button>
+        <div class="bt"><small>▼ ${t('owed')}</small><div class="num">${money(tot.owed)}</div></div>
+        <div class="bt big"><small>${t('balanceEq')}</small><div class="num">${money(tot.net)}</div></div>
+        <div class="bt"><small>▲ ${t('due')}</small><div class="num">${money(tot.due)}</div></div>
+        <button class="fab" data-act="nav" data-arg="about" aria-label="?">?</button>`;
+    }
+    function renderContent() {
+      const active = document.activeElement;
+      const fid = active && active.id;
+      const pos = active && active.selectionStart != null ? active.selectionStart : null;
+      const fn = VIEWS[ui.view] || VIEWS.totals;
+      $('#main').innerHTML = fn();
+      renderBottom();
+      if (fid) {
+        const el = document.getElementById(fid);
+        if (el) {
+          el.focus();
+          if (pos != null && el.setSelectionRange) { try { el.setSelectionRange(pos, pos); } catch (e) { /* non-text input */ } }
+        }
+      }
+    }
+    function renderAll() {
+      applyPrefs();
+      $('#drawer').innerHTML = drawerHTML();
+      renderContent();
+    }
+
+    // ---------- WhatsApp / sharing ----------
+    function normPhone(p) {
+      let d = String(p).replace(/\D/g, '');
+      const cc = S.settings.countryCode || '967';
+      if (d.startsWith('00')) d = d.slice(2);
+      else if (d.startsWith('0')) d = cc + d.slice(1);
+      else if (d.length <= 9) d = cc + d;
+      return d;
+    }
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      toast(t('copied'));
+    }
+    function sendWA(text, phone) {
+      if (!phone) return copyText(text);
+      window.open('https://wa.me/' + normPhone(phone) + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    }
+    function personMessage(name) {
+      const p = summaries().find(x => x.name === name);
+      if (!p) return '';
+      const state = p.net > 0 ? t('stateOwed') : p.net < 0 ? t('stateDue') : t('settled');
+      const last = sortedEntries(S.entries.filter(e => e.name.trim() === name)).slice(-5)
+        .map(e => `• ${e.date} | ${e.type === 'debit' ? '▼' : '▲'} ${money(e.cents)} | ${catLabel(e.category)}${e.note ? ' - ' + e.note : ''}`).join('\n');
+      return [
+        `*${S.settings.orgName || t('appName')}*`,
+        `${t('waHello')} ${dispName(name)}`,
+        `${t('balance')}: ${money(Math.abs(p.net))} (${state})`,
+        `${t('days')}: ${p.days}`,
+        `${t('lastMoves')}:`, last,
+        S.settings.accountantName ? `${t('accountant')}: ${S.settings.accountantName}` : ''
+      ].filter(Boolean).join('\n');
+    }
+    function reportText() {
+      if (ui.view === 'monthly') {
+        const map = new Map();
+        for (const e of S.entries) {
+          const k = e.date.slice(0, 7);
+          map.set(k, (map.get(k) || 0) + signed(e));
+        }
+        return [...map.entries()].sort().map(([k, v]) => `${k}: ${money(Math.abs(v))} ${v >= 0 ? '▼' : '▲'}`).join('\n');
+      }
+      if (ui.view === 'categories') {
+        return S.entries.reduce((m, e) => { m[e.category] = ME.add(m[e.category] || 0, e.cents); return m; }, {});
+      }
+      if (ui.view === 'movement') {
+        const list = ui.account === '__all__' ? S.entries : S.entries.filter(e => e.name.trim() === ui.account);
+        return sortedEntries(list).map(e => `${voucher(e)} ${e.date} ${dispName(e.name)} ${e.type === 'debit' ? '▼' : '▲'} ${money(e.cents)}`).join('\n');
+      }
+      const rows = summaries();
+      const tot = totalsOf(rows);
+      const lines = rows.map(p => `${dispName(p.name)}: ${money(Math.abs(p.net))} ${p.net > 0 ? '▼' : p.net < 0 ? '▲' : ''} (${p.days})`);
+      lines.push(`${t('owed')} ▼: ${money(tot.owed)}`, `${t('due')} ▲: ${money(tot.due)}`, `${t('balanceEq')} ${money(tot.net)}`);
+      return `*${S.settings.orgName || t('appName')}*\n` + lines.join('\n');
+    }
+    async function shareText(text, title) {
+      if (navigator.share) {
+        try { await navigator.share({ title, text }); return; } catch (e) { /* cancelled */ }
+      }
+      sendWA(text, '');
+    }
+
+    // ---------- Self-test ----------
+    function runSelfTests() {
+      const results = [];
+      const check = (name, fn) => {
+        let ok = false;
+        try { ok = !!fn(); } catch (e) { ok = false; }
+        results.push({ name, ok });
+      };
+      const seed = summaries(seedEntries(), REF_DATE);
+      const ref = totalsOf(seed);
+      check('0.1 + 0.2 = 0.30', () => ME.format(ME.add(ME.toCents(0.1), ME.toCents(0.2))) === '0.30');
+      check('14500+500*2 = 15,500', () => ME.format(evalExpr('14500+500*2')) === '15,500');
+      check('Arabic digits ٣٠٠ = 300', () => evalExpr('٣٠٠') === 30000);
+      check('Expression injection rejected', () => { try { evalExpr('alert(1)'); return false; } catch (e) { return true; } });
+      check('Reference owed total = 44,000', () => ME.format(ref.owed) === '44,000');
+      check('Reference due total = 16,500', () => ME.format(ref.due) === '16,500');
+      check('Reference net = 27,500', () => ME.format(ref.net) === '27,500');
+      check('Days 2016-06-07 → 4', () => daysBetween('2016-06-07', REF_DATE) === 4);
+      check('Cents conversion 0.29 → 29', () => ME.toCents(0.29) === 29);
+      const passed = results.filter(r => r.ok).length;
+      return { results, passed, failed: results.length - passed };
+    }
+
+    // ---------- Actions ----------
+    function toast(msg, kind) {
+      const el = $('#toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (kind === 'err' ? ' err' : '');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => { el.className = 'toast'; }, 2400);
+    }
+    function download(name, data, type) {
+      const url = URL.createObjectURL(new Blob([data], { type }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    function backupJSON() {
+      return JSON.stringify({
+        app: 'pro-accounting-ledger', version: APP_VERSION, exportedAt: new Date().toISOString(),
+        settings: S.settings, seq: S.seq, entries: S.entries, recurring: S.recurring
+      }, null, 2);
+    }
+    function toCSV() {
+      const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+      const head = ['voucher', 'date', 'name', 'type', 'category', 'phone', 'note', 'amount'].join(',');
+      const rows = sortedEntries().map(e => [voucher(e), e.date, e.name, e.type, e.category, e.phone, e.note, (e.cents / 100).toFixed(2)].map(q).join(','));
+      return '\uFEFF' + [head, ...rows].join('\r\n');
+    }
+    function closeDrawer() {
+      $('#drawer').classList.remove('open');
+      $('#backdrop').classList.remove('open');
+    }
+    function saveEntry() {
+      const f = ui.form;
+      const name = f.name.trim();
+      if (!name) return toast(t('nameReq'), 'err');
+      let cents = null;
+      try { cents = evalExpr(f.amount); } catch (e) { cents = null; }
+      if (!cents || cents <= 0) return toast(t('amountReq'), 'err');
+      if (!isValidDate(f.date)) return toast(t('dateReq'), 'err');
+      S.seq += 1;
+      S.entries.push({ id: uid(), seq: S.seq, name, type: f.type, cents, category: f.category, phone: f.phone.trim(), note: f.note.trim(), date: f.date });
+      persist();
+      ui.form = { ...ui.form, name: '', amount: '', note: '' };
+      toast(t('saved'));
+      renderAll();
+    }
+    function saveSettings() {
+      const get = k => { const el = document.querySelector(`[data-set="${k}"]`); return el ? el.value : ''; };
+      const cal = get('calcDate');
+      if (!isValidDate(cal)) return toast(t('dateReq'), 'err');
+      const pin = get('pin').trim();
+      if (pin && !/^\d{4,8}$/.test(pin)) return toast(t('pinReq'), 'err');
+      const cc = get('countryCode').replace(/\D/g, '');
+      if (!cc) return toast(t('countryCode') + ' ✗', 'err');
+      Object.assign(S.settings, {
+        orgName: get('orgName').trim(), accountantName: get('accountantName').trim(), countryCode: cc,
+        calcDate: cal, currency: get('currency'), theme: get('theme'), lang: get('lang'), pin
+      });
+      persist();
+      toast(t('saved'));
+      renderAll();
+    }
+    function restoreFromFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const d = JSON.parse(reader.result);
+          if (!d || !Array.isArray(d.entries) || !d.entries.every(validEntry)) throw new Error('invalid');
+          if (!confirm(t('confirmRestore'))) return;
+          S = normalize(d);
+          persist();
+          ui.locked = !!S.settings.pin && ui.locked;
+          toast(t('restored'));
+          renderAll();
+        } catch (err) {
+          toast(t('invalidFile'), 'err');
+        }
+      };
+      reader.readAsText(file);
+    }
+    function addRecurring() {
+      const r = ui.rec;
+      const name = r.name.trim();
+      if (!name) return toast(t('nameReq'), 'err');
+      let cents = null;
+      try { cents = evalExpr(r.amount); } catch (e) { cents = null; }
+      if (!cents || cents <= 0) return toast(t('amountReq'), 'err');
+      if (!isValidDate(r.date)) return toast(t('dateReq'), 'err');
+      S.recurring.push({ id: uid(), name, type: r.type, cents, category: r.category, phone: '', note: '', freq: r.freq, nextDate: r.date });
+      persist();
+      ui.rec = { ...ui.rec, name: '', amount: '' };
+      toast(t('saved'));
+      renderAll();
+    }
+    function runRecurring() {
+      const today = todayISO();
+      let posted = 0;
+      for (const r of S.recurring) {
+        let guard = 0;
+        while (r.nextDate <= today && guard++ < 1000) {
+          S.seq += 1;
+          S.entries.push({ id: uid(), seq: S.seq, name: r.name, type: r.type, cents: r.cents, category: r.category,
+            phone: r.phone || '', note: r.note || t('recurringNote'), date: r.nextDate });
+          r.nextDate = addPeriod(r.nextDate, r.freq);
+          posted++;
+        }
+      }
+      persist();
+      toast(`${t('posted')}: ${posted}`);
+      renderAll();
+    }
+
+    const ACT = {
+      nav(v) { ui.view = v; closeDrawer(); renderAll(); window.scrollTo(0, 0); },
+      openDrawer() { $('#drawer').innerHTML = drawerHTML(); $('#drawer').classList.add('open'); $('#backdrop').classList.add('open'); },
+      closeDrawer,
+      toggleLang() { S.settings.lang = S.settings.lang === 'ar' ? 'en' : 'ar'; persist(); renderAll(); },
+      sort(k) {
+        if (ui.sortKey === k) ui.sortDir *= -1; else { ui.sortKey = k; ui.sortDir = 1; }
+        renderContent();
+      },
+      expand(n) { ui.expanded[n] = !ui.expanded[n]; renderContent(); },
+      quickAdd(n) {
+        const p = summaries().find(x => x.name === n);
+        ui.form = { ...ui.form, name: n, phone: p ? p.phone : '' };
+        ui.view = 'add';
+        renderAll();
+        window.scrollTo(0, 0);
+      },
+      pickName(n) {
+        const p = summaries().find(x => x.name === n);
+        ui.form = { ...ui.form, name: n, phone: p && p.phone ? p.phone : ui.form.phone };
+        renderContent();
+      },
+      statement(n) { ui.account = n; ui.view = 'movement'; renderAll(); window.scrollTo(0, 0); },
+      wa(n) {
+        const p = summaries().find(x => x.name === n);
+        sendWA(personMessage(n), p ? p.phone : '');
+      },
+      del(id) {
+        if (!confirm(t('confirmDelete'))) return;
+        S.entries = S.entries.filter(e => e.id !== id);
+        persist();
+        toast(t('deleted'));
+        renderAll();
+      },
+      setType(v) { ui.form.type = v; renderContent(); },
+      setRecType(v) { ui.rec.type = v; renderContent(); },
+      quick(v) {
+        const cur = ui.form.amount.trim();
+        ui.form.amount = cur ? cur + '+' + v : v;
+        renderContent();
+      },
+      saveEntry,
+      saveSettings,
+      addRec: addRecurring,
+      runRec: runRecurring,
+      delRec(id) {
+        if (!confirm(t('confirmDelete'))) return;
+        S.recurring = S.recurring.filter(r => r.id !== id);
+        persist();
+        renderAll();
+      },
+      print() { window.print(); },
+      shareView() {
+        const text = reportText();
+        if (typeof text === 'object') return shareText(JSON.stringify(text), t(ui.view === 'categories' ? 'reportCategories' : 'reportTotals'));
+        shareText(text, t('appName'));
+      },
+      backupJSON() { download('pro-accounting-ledger-' + todayISO() + '.json', backupJSON(), 'application/json'); },
+      backupCSV() { download('pro-accounting-ledger-' + todayISO() + '.csv', toCSV(), 'text/csv;charset=utf-8'); },
+      async driveExport() {
+        const name = 'pro-accounting-ledger-' + todayISO() + '.json';
+        const file = new File([backupJSON()], name, { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try { await navigator.share({ files: [file], title: name }); return; } catch (e) { /* cancelled */ }
+        }
+        download(name, backupJSON(), 'application/json');
+        window.open('https://drive.google.com/drive/my-drive', '_blank', 'noopener');
+      },
+      driveOpen() { window.open('https://drive.google.com/drive/my-drive', '_blank', 'noopener'); },
+      support() {
+        const phone = ui.supportPhone.trim();
+        S.settings.supportPhone = phone;
+        persist();
+        sendWA(t('supportMsg'), phone);
+      },
+      selfTest() { ui.tests = runSelfTests(); renderContent(); },
+      shareApp() {
+        const text = t('appName') + '\n' + location.href;
+        shareText(text, t('appName'));
+      },
+      logout() {
+        if (!S.settings.pin) {
+          toast(t('setPinFirst'), 'err');
+          ui.view = 'settings';
+          closeDrawer();
+          renderAll();
+          return;
+        }
+        ui.locked = true;
+        closeDrawer();
+        renderAll();
+        setTimeout(() => $('#pinInput').focus(), 0);
+      }
+    };
+
+    document.addEventListener('click', e => {
+      const el = e.target.closest('[data-act]');
+      if (!el) return;
+      const fn = ACT[el.dataset.act];
+      if (fn) fn(el.dataset.arg, el);
+    });
+    function setPath(obj, path, value) {
+      const keys = path.split('.');
+      let o = obj;
+      for (let i = 0; i < keys.length - 1; i++) o = o[keys[i]];
+      o[keys[keys.length - 1]] = value;
+    }
+    document.addEventListener('input', e => {
+      if (!e.target.dataset || !e.target.dataset.bind || e.target.tagName === 'SELECT') return;
+      setPath(ui, e.target.dataset.bind, e.target.value);
+      renderContent();
+    });
+    document.addEventListener('change', e => {
+      if (e.target.id === 'restoreFile') return restoreFromFile(e.target.files[0]);
+      if (!e.target.dataset || !e.target.dataset.bind) return;
+      setPath(ui, e.target.dataset.bind, e.target.value);
+      renderContent();
+    });
+
+    function tryUnlock() {
+      const input = $('#pinInput');
+      if (input.value === S.settings.pin) {
+        ui.locked = false;
+        input.value = '';
+        renderAll();
+      } else {
+        input.value = '';
+        toast(t('wrongPin'), 'err');
+      }
+    }
+    $('#unlockBtn').addEventListener('click', tryUnlock);
+    $('#pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+    if (S.settings.lang === 'en') { /* language applied in renderAll */ }
+    renderAll();
+  </script>
+</body>
+</html>

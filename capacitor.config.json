@@ -1,0 +1,12 @@
+{
+  "appId": "com.raoof.accountingledger",
+  "appName": "المحاسب الاحترافي الذكي",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
